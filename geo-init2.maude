@@ -1,0 +1,99 @@
+mod GEO-INIT is   
+  protecting GEO-DEFINITION .
+  protecting GEO-FUNCS .
+  protecting GEO-PETROLEUM .  
+  protecting NAT .
+
+
+  op caseStudy : -> Configuration [ctor] . 
+  eq caseStudy
+  = < GeoUnit | Ocnt: 12 > 
+   < Hydrocarbon | Ocnt: 0 > 
+   < Fault | Ocnt: 3 > 
+   < Pathways | Pathways: nil, Ocnt: 0 > 
+
+   < 0 : Fault | FType: reversefault, Filling: unknown, InContactWith: (3,dippingAway,6) :: ((4,dippingAway,6) :: ((5,dippingAway,6) :: ((5,dippingAway,7) ::
+			                                               ((6,dippingTowards,3) :: ((6,dippingTowards,4) :: ((6,dippingTowards,5) :: ((7,dippingTowards,5) :: ((8,dippingTowards,-1) :: nil)))))))), Time: 140 >
+
+   < 1 : Fault | FType: reversefault, Filling: unknown, InContactWith: (6,dippingAway,9) :: ((7,dippingAway,9) :: ((7,dippingAway,10) :: ((8,dippingAway,10) :: ((8,dippingAway,11) ::
+			                                               ((9,dippingTowards,6) :: ((9,dippingTowards,7) :: ((10,dippingTowards,7) :: ((10,dippingTowards,8) :: ((11,dippingTowards,8) :: nil))))))))), Time: 140 >
+
+   < 2 : Fault | FType: reversefault, Filling: unknown, InContactWith: (9,dippingAway,12) :: ((10,dippingAway,12) :: ((10,dippingAway,13) :: ((11,dippingAway,13) :: ((11,dippingAway,14) ::
+				                                       ((12,dippingTowards,9) :: ((12,dippingTowards,10) :: ((13,dippingTowards,10) :: ((13,dippingTowards,11) :: ((14,dippingTowards,11) :: nil))))))))), Time: 140 >
+
+	
+   < 3 : GeoUnit  | GeoUnit: 0, Type: shale, Permeability: unknown, Porosity: unknown, Folded: false, DepositedIn: terrestrial, Time: 180, Role: noRole, --- sourceRock,
+		 InContactWith: 4 :: nil, KerogenType: "3", Hydrocarbon: null > 
+   < 4 : GeoUnit  | GeoUnit: 1, Type: sandstone, Permeability: unknown, Porosity: unknown, Folded: false, DepositedIn: terrestrial, Time: 165, Role: noRole, --- reservoirRock,
+		 InContactWith: 5 :: (3 :: nil), KerogenType: "none", Hydrocarbon: null > 
+   < 5 : GeoUnit  | GeoUnit: 2, Type: shale, Permeability: unknown, Porosity, unknown, Folded: false, DepositedIn: terrestrial, Time: 150, Role: noRole, --- topSeal,
+		 InContactWith: 4 :: nil, KerogenType: "none", Hydrocarbon: null >
+	  
+   < 6 : GeoUnit  | GeoUnit: 0, Type: shale, Permeability: unknown, Porosity: unknown, Folded: false, DepositedIn: terrestrial, Time: 180, Role: noRole, --- sourceRock,
+		 InContactWith: 7 :: nil, KerogenType: "none", Hydrocarbon: null > 
+   < 7 : GeoUnit  | GeoUnit: 1, Type: sandstone, Permeability: unknown, Porosity: unknown, Folded: false, DepositedIn: terrestrial, Time: 165, Role: noRole, --- reservoirRock,
+		 InContactWith: 8 :: (6 :: nil), KerogenType: "none", Hydrocarbon: null > 
+   < 8 : GeoUnit  | GeoUnit: 2, Type: shale, Permeability: unknown, Porosity: unknown, Folded: false, DepositedIn: terrestrial, Time: 150, Role: noRole, --- topSeal,
+		 InContactWith: 7 :: nil, KerogenType: "none", Hydrocarbon: null >
+
+   < 9 : GeoUnit  | GeoUnit: 0, Type: shale, Permeability: unknown, Porosity: unknown, Folded: false, DepositedIn: terrestrial, Time: 180, Role: noRole, --- sourceRock,
+		 InContactWith: 10 :: nil, KerogenType: "none", Hydrocarbon: null > 
+   < 10 : GeoUnit | GeoUnit: 1, Type: sandstone, Permeability: unknown, Porosity: unknown, Folded: false, DepositedIn: terrestrial, Time: 165, Role: noRole, --- reservoirRock,
+		 InContactWith: 11 :: (9 :: nil), KerogenType: "none", Hydrocarbon: null > 
+   < 11 : GeoUnit | GeoUnit: 2, Type: shale, Permeability: unknown, Porosity: unknown, Folded: false, DepositedIn: terrestrial, Time: 150, Role: noRole, --- topSeal,
+		 InContactWith: 10 :: nil, KerogenType: "none", Hydrocarbon: null >
+	
+
+   depositionalContact((1,2) :: ((0,1) :: nil))		    	
+   trapformation(4,unknown) trapformation(7,unknown) trapformation(10,unknown)
+   accumulation(4,false) accumulation(7,false) accumulation(10,false)
+   history("init") .
+
+  
+  op caseStudy-test : -> Configuration [ctor] . 
+  eq caseStudy-test
+  = < GeoUnit | Ocnt: 12 > 
+   < Hydrocarbon | Ocnt: 0 > 
+   < Fault | Ocnt: 3 > 
+   < Pathways | Pathways: nil, Ocnt: 0 > 
+
+   < 0 : Fault | FType: reversefault, Filling: unknown, InContactWith: (3,dippingAway,6) :: ((4,dippingAway,6) :: ((5,dippingAway,6) :: ((5,dippingAway,7) ::
+			                                               ((6,dippingTowards,3) :: ((6,dippingTowards,4) :: ((6,dippingTowards,5) :: ((7,dippingTowards,5) :: ((8,dippingTowards,-1) :: nil)))))))), Time: 140 >
+
+   < 1 : Fault | FType: reversefault, Filling: unknown, InContactWith: (6,dippingAway,9) :: ((7,dippingAway,9) :: ((7,dippingAway,10) :: ((8,dippingAway,10) :: ((8,dippingAway,11) ::
+			                                               ((9,dippingTowards,6) :: ((9,dippingTowards,7) :: ((10,dippingTowards,7) :: ((10,dippingTowards,8) :: ((11,dippingTowards,8) :: nil))))))))), Time: 140 >
+
+   < 2 : Fault | FType: reversefault, Filling: unknown, InContactWith: (9,dippingAway,12) :: ((10,dippingAway,12) :: ((10,dippingAway,13) :: ((11,dippingAway,13) :: ((11,dippingAway,14) ::
+				                                       ((12,dippingTowards,9) :: ((12,dippingTowards,10) :: ((13,dippingTowards,10) :: ((13,dippingTowards,11) :: ((14,dippingTowards,11) :: nil))))))))), Time: 140 >
+
+	
+   < 3 : GeoUnit  | GeoUnit: 0, Type: shale, Permeability: False, Porosity: False, Folded: false, DepositedIn: terrestrial, Time: 180, Role: noRole, --- sourceRock,
+		 InContactWith: 4 :: nil, KerogenType: "3", Hydrocarbon: null > 
+   < 4 : GeoUnit  | GeoUnit: 1, Type: sandstone, Permeability: False, Porosity: False, Folded: false, DepositedIn: terrestrial, Time: 165, Role: noRole, --- reservoirRock,
+		 InContactWith: 5 :: (3 :: nil), KerogenType: "none", Hydrocarbon: null > 
+   < 5 : GeoUnit  | GeoUnit: 2, Type: shale, Permeability: False, Porosity, False, Folded: false, DepositedIn: terrestrial, Time: 150, Role: noRole, --- topSeal,
+		 InContactWith: 4 :: nil, KerogenType: "none", Hydrocarbon: null >
+	  
+   < 6 : GeoUnit  | GeoUnit: 0, Type: shale, Permeability: False, Porosity: False, Folded: false, DepositedIn: terrestrial, Time: 180, Role: noRole, --- sourceRock,
+		 InContactWith: 7 :: nil, KerogenType: "none", Hydrocarbon: null > 
+   < 7 : GeoUnit  | GeoUnit: 1, Type: sandstone, Permeability: False, Porosity: False, Folded: false, DepositedIn: terrestrial, Time: 165, Role: noRole, --- reservoirRock,
+		 InContactWith: 8 :: (6 :: nil), KerogenType: "none", Hydrocarbon: null > 
+   < 8 : GeoUnit  | GeoUnit: 2, Type: shale, Permeability: False, Porosity: False, Folded: false, DepositedIn: terrestrial, Time: 150, Role: noRole, --- topSeal,
+		 InContactWith: 7 :: nil, KerogenType: "none", Hydrocarbon: null >
+
+   < 9 : GeoUnit  | GeoUnit: 0, Type: shale, Permeability: False, Porosity: False, Folded: false, DepositedIn: terrestrial, Time: 180, Role: noRole, --- sourceRock,
+		 InContactWith: 10 :: nil, KerogenType: "none", Hydrocarbon: null > 
+   < 10 : GeoUnit | GeoUnit: 1, Type: sandstone, Permeability: False, Porosity: False, Folded: false, DepositedIn: terrestrial, Time: 165, Role: noRole, --- reservoirRock,
+		 InContactWith: 11 :: (9 :: nil), KerogenType: "none", Hydrocarbon: null > 
+   < 11 : GeoUnit | GeoUnit: 2, Type: shale, Permeability: False, Porosity: False, Folded: false, DepositedIn: terrestrial, Time: 150, Role: noRole, --- topSeal,
+		 InContactWith: 10 :: nil, KerogenType: "none", Hydrocarbon: null >
+	
+
+   depositionalContact((1,2) :: ((0,1) :: nil))		    	
+   trapformation(4,unknown) trapformation(7,unknown) trapformation(10,unknown)
+   accumulation(4,false) accumulation(7,false) accumulation(10,false)
+   history("init") .
+
+  
+		        
+endm
