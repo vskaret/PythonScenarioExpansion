@@ -87,26 +87,19 @@ def replace_pattern(text, op_name, values_list, pattern_list, comments=""):
 
 ### start of script ###
 
-# filenames
+# filename
 in_file = "geo-init.maude"
-#out_file = "test-init"
-
-# global variables (for writing out to file)
-# operator_name = "caseStudy"  # should be found in the configuration file
 
 # terminal arguments:
 if len(argv) > 1 and argv[1].lower() in ['?', 'h', 'help', '--help', '-h']:
-    print("python3 config-gen.py input-file output-file [maude-operator-name]")
+    print("python3 UnknownReplacer.py input-file")
     print("If no command line arguments given, default will be:")
     print("input-file: 'geo-init.maude'")
-    print("output-file: 'test-init.maude'")
-    print("maude-operator-name: 'caseStudy'")
     exit()
 
 # python3 config-gen.py input-file output-file
 if len(argv) > 1:
     in_file = argv[1]
-    #out_file = argv[2]
 
 # replacement values
 fault_filling_values = ["sealing", "non-sealing"]
@@ -155,12 +148,9 @@ with open(in_file, 'r') as input:
     scenarios = re.findall(equation_pattern, text)
 
     for scenario in scenarios:
-        equation_number = 0 # global variable for filename
+        equation_number = 0 # global variable for operator name and file name
         op_name = re.search(eq_name_pattern, scenario).group(1)
         state = re.search(eq_state_pattern, scenario).group(1)
-
-        # utskrivingen skjer i løvnodene..
-
         comment = "--- Assumptions made in Python:\n"
 
         replace_pattern(state, op_name, list_of_values, list_of_patterns, comment)
