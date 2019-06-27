@@ -63,15 +63,16 @@ class Expander():
 
     def extend_config_file(self, filename):
         self.read_config_file(filename)
-        self.generate_stuff()
+        for config in self.initial_configs:
+            self.generate_stuff(config)
 
-        self.equation_number = 0
-        for output in self.outputs:
-            self.write_output_to_file(output)
-            self.equation_number += 1
+            self.equation_number = 0
+            for output in self.outputs:
+                self.write_output_to_file(output)
+                self.equation_number += 1
 
-    def generate_stuff(self):
-        config = self.initial_configs[0]
+    def generate_stuff(self, config):
+        #config = self.initial_configs[0]
         units = self.find_stuff(config)
 
         #t = self.units[0]
@@ -271,4 +272,5 @@ class Expander():
 
 
 a = Expander()
-a.extend_config_file("env-init2.maude")
+#a.extend_config_file("env-init2.maude")
+a.extend_config_file("geo-init2.maude")
