@@ -272,5 +272,4 @@ class Expander():
 
 
 a = Expander()
-#a.extend_config_file("env-init2.maude")
-a.extend_config_file("geo-init2.maude")
+a.extend_config_file("env-init2.maude")
