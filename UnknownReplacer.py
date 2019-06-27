@@ -1,156 +1,274 @@
-"""UnknownReplacer.py: Expands a scenario by generating permutations of property values that are set to unknown. This is done with replacing the keyword "unknown" with some preset replacement values, for example sealing and non-sealing for a fault's filling type.
-
-Each generated scenario is stored in a separate maude file.
-
-Can be ran with the following command:
-python3 UnknownReplacer.py maude_file_name"""
-
-import re
-from sys import argv
+import pprint, re
 
 
-### some methods ###
+class Expander():
 
-def write_config_to_file(fname, output):
-    with open(fname, 'w') as outfile:
-        outfile.write("mod GEO-INIT is\n")
-        outfile.write("  protecting GEO-DEFINITION .\n")
-        outfile.write("  protecting GEO-FUNCS .\n")
-        outfile.write("  protecting GEO-PETROLEUM .\n")
-        outfile.write("  protecting NAT .\n")
-        outfile.write(output)
-        outfile.write("\nendm")
+    def __init__(self):
+        self.permutation_lists = []
+        self.regex_pattern_lists = []
 
-def replace_pattern(text, op_name, values_list, pattern_list, comments=""):
-    """Replaces parts of the text where it has matched with an element from the pattern list
-    with the corresponding element in the values_list. It will first replace the first match,
-    with all elements in the first list in values_list, then make a recursive call to create
-    all the different possibilities.
+        self.environment_permutations = []
+        self.other_permutations = []
 
-    Note that the patterns in pattern list must have two groups (one before the word to be
-    replaced and one after)."""
+        self.pp = pprint.PrettyPrinter(width=200)
 
-    # need copy of the list because of using pop later (pop will edit the list outside of this scope)
-    values_list = values_list.copy()
-    pattern_list = pattern_list.copy()
+        self.configuration = ""
+        self.initial_configs = []
+        self.units = []
+        self.temp_configs = []
+        self.wip_configs = []
 
-    if len(values_list) != len(pattern_list):
-        print("replace_pattern(): lists must be of same length")
-        return
-
-    # remove finished pattern
-    pattern = pattern_list[0]
-    if re.search(pattern, text) is None:
-    # all unknowns for this pattern is replaced, so remove it
-        pattern_list.pop(0)
-        values_list.pop(0)
-
-    # base case (when no more things to replace), write output to file
-    if not values_list:
-        # oops maybe not so nice with global variable
-        global equation_number
-
-        # change operator name
-        op_text = "\n\n\n  op " + op_name + "-" + str(equation_number) + " : -> Configuration [ctor] .\n"
-
-        # add number to the eq name as in eq caseStudy becomes eq caseStudy0
-        eq_text = "  eq " + op_name + str(equation_number) + text + "\n"
-
-        fname = op_name + "-" + str(equation_number) + ".maude"
-        output = "\n" + comments + op_text + eq_text
-        write_config_to_file(fname, output)
-
-        equation_number += 1
-        return
-
-    # values_list: something like [['sealing', 'non-sealing'], ['shale', 'non-shale']]
-    # pattern_list: something like [filling_pattern, geounit_type_pattern] (regex patterns with two groups)
-    values = values_list[0]
-    pattern = pattern_list[0]
-
-    for value in values:
-        # assumption made for the following geo-unit
-        info = re.search(pattern,text).group(1)
-        geo_unit = re.search(geo_unit_pattern, info).group(1)
-
-        # replace the part of pattern which is not in the first group or second group with value
-        # (usually (always?) the word unknown that is replaced)
-        result = re.sub(pattern, r'\g<1>'+value+r'\g<2>', text, count=1)
-
-        # add assumption comment
-        comment = comments + "--- Geo-unit " + geo_unit + " is assumed to be " + value + "\n"
-
-        # replace the rest
-        replace_pattern(result, op_name, values_list, pattern_list, comment)
+        self.equation_number = 0
 
 
 
-### start of script ###
+    def pprint(self, l):
+        self.pp.pprint(l)
 
-# filename
-in_file = "geo-init.maude"
+    def write_output_to_file(self, output):
+        comments = ""
 
-# terminal arguments:
-if len(argv) > 1 and argv[1].lower() in ['?', 'h', 'help', '--help', '-h']:
-    print("python3 UnknownReplacer.py input-file")
-    print("If no command line arguments given, default will be:")
-    print("input-file: 'geo-init.maude'")
-    exit()
+        operator_name = re.search(r"eq (\S+)", output).group(1)
+        operator_text = "\n\n\n op " + operator_name + "-" + str(self.equation_number) + " : -> Configuration [ctor] .\n"
+        equation_text = "  eq " + operator_name + str(self.equation_number) + output + "\n"
 
-# python3 config-gen.py input-file output-file
-if len(argv) > 1:
-    in_file = argv[1]
+        filename = operator_name + "-" + str(self.equation_number) + ".maude"
+        out = "\n" + comments + operator_text + equation_text
 
-# replacement values
-fault_filling_values = ["sealing", "non-sealing"]
-#traptype_values = ["anticlinal", "faultDependent"]
-permeability_values = ["permeable", "non-permeable"]
-porosity_values = ["porous", "non-porous"]
-
-# sub patterns
-# non-grouped
-sandstone = r"<[^>]*?Type: sandstone"
-unknown = r"unknown"
-# grouped (these parts will be kept during replacement, but can max have 2 groups)
-#fault_filling = r"(<.*?Fault.*?Filling: )"
-fault_filling = r"(<[^>]*?Fault[^>]*?Filling: )"
-end = r"([^>]*?>)"
-sandstone_permeability = r"(" + sandstone + r"[^>]*?Permeability: )"
-sandstone_porosity = r"(" + sandstone + r"[^>]*?Porosity: )"
-
-# replacement (regex) patterns - used in the re.sub() call under replace_pattern()
-# want to replace unknown, so keep the rest (the grouped part in parentheses)
-fault_filling_pattern = re.compile(fault_filling + unknown + end, flags=re.DOTALL)
-traptype_pattern = re.compile(r"(trapformation\(\d+,)unknown(\))")
-permeable_sandstone_pattern = re.compile(sandstone_permeability + unknown + end, flags=re.DOTALL)
-porosity_sandstone_pattern = re.compile(sandstone_porosity + unknown + end, flags=re.DOTALL)
-
-equation_pattern = re.compile(r"eq \S+" + r".*?\.", re.DOTALL)
-eq_name_pattern = re.compile("eq (\S+)")
-eq_state_pattern = re.compile(r"eq \S+" + r"(.*?\.)", re.DOTALL)
-geo_unit_pattern = re.compile(r"< (\d+)")
-
-list_of_values = [
-    fault_filling_values,
-    #permeability_values,
-    #porosity_values
-]
-
-list_of_patterns = [
-    fault_filling_pattern,
-    #permeable_sandstone_pattern,
-    #porosity_sandstone_pattern
-]
+        with open(filename, 'w') as outfile:
+            outfile.write("mod GEO-INIT is\n")
+            outfile.write("  protecting GEO-DEFINITION .\n")
+            outfile.write("  protecting GEO-FUNCS .\n")
+            outfile.write("  protecting GEO-PETROLEUM .\n")
+            outfile.write("  protecting NAT .\n")
+            outfile.write(out)
+            outfile.write("\nendm")
 
 
-with open(in_file, 'r') as input:
-    text = input.read()
-    scenarios = re.findall(equation_pattern, text)
+    #def read_config_file(self, filename):
+    def read_config_file(self, filename):
+        # reset configs so only current file is in memory
+        self.initial_configs = []
 
-    for scenario in scenarios:
-        equation_number = 0 # global variable for operator name and file name
-        op_name = re.search(eq_name_pattern, scenario).group(1)
-        state = re.search(eq_state_pattern, scenario).group(1)
-        comment = "--- Assumptions made in Python:\n"
+        config_regex = re.compile(r"eq \S+.*?\.", re.DOTALL)
+        with open(filename, 'r') as config_file:
+            text = config_file.read()
+            inits = re.findall(config_regex, text)
 
-        replace_pattern(state, op_name, list_of_values, list_of_patterns, comment)
+        self.initial_configs = inits
+        #return initial_configs
+
+        #self.pp.pprint(initial_configs)
+        #print(len(initial_configs))
+
+    def extend_config_file(self, filename):
+        self.read_config_file(filename)
+        self.generate_stuff()
+
+        self.equation_number = 0
+        for output in self.outputs:
+            self.write_output_to_file(output)
+            self.equation_number += 1
+
+    def generate_stuff(self):
+        config = self.initial_configs[0]
+        units = self.find_stuff(config)
+
+        #t = self.units[0]
+        t = units
+        number_of_faults = len(t[0])
+        number_of_sandstones = len(t[1])
+
+        print("faults: " + str(number_of_faults))
+        print("sandstones: " + str(number_of_sandstones))
+
+        self.generate_other_permutations(number_of_faults, ["sealing", "non-sealing"])
+        self.generate_environment_permutations(number_of_sandstones)
+
+        #self.pprint(self.other_permutations)
+        #self.pprint(self.environment_permutations)
+
+        # regexes
+        unknown = r"unknown"
+        end = r"([^>]*?>)"
+        fault_filling = r"(<[^>]*?Fault[^>]*?Filling: )"
+        fault_filling_pattern = re.compile(fault_filling + unknown + end, flags=re.DOTALL)
+        sandstone = r"<[^>]*?Type: sandstone"
+        sandstone_submarinefan = r"(" + sandstone + r"[^>]*?SubmarineFan: )"
+        submarinefan_sandstone_pattern = re.compile(sandstone_submarinefan + unknown + end, flags=re.DOTALL)
+
+        pattern_permutation_pairs = [
+            (fault_filling_pattern, self.other_permutations),
+            (submarinefan_sandstone_pattern, self.environment_permutations)
+        ]
+
+        self.temp_configs = self.initial_configs
+        self.wip = []
+
+        for pattern, permutation in pattern_permutation_pairs:
+            for config in self.temp_configs:
+                self.replace_pattern(config, permutation, pattern)
+
+            self.temp_configs = self.wip
+            self.wip = []
+
+        self.outputs = self.temp_configs
+
+        #for temp in self.temp_configs:
+            #print(temp)
+            #print("\n\n\n\n\n\n")
+        ##self.pprint(self.temp_configs)
+        """
+        for a in t[0]:
+            print(a)
+            print("*")
+
+        print("****")
+
+        for b in t[1]:
+            print(b)
+            print("*")
+        """
+
+
+    def generate_other_permutations(self, number_of_units, values):
+        self.other_permutations = []
+
+        self.recursive_other_permutate(number_of_units, values, [])
+
+        #pp = pprint.PrettyPrinter(width=50*(number_of_units+1))
+        #pp.pprint(self.all_permutations)
+
+
+    def recursive_other_permutate(self, number_of_units, values, output):
+
+        if number_of_units == 0:
+            #self.other_permutations[-1].append(output) # always append to the last list
+            self.other_permutations.append(output)
+            return
+
+        for value in values:
+            new_output = output.copy()
+            new_output.append(value)
+            self.recursive_other_permutate(number_of_units-1, values, new_output)
+
+    def generate_environment_permutations(self, number_of_units):
+        FC = "feederChannel"
+        IC1 = "interChannel"
+        DC = "distributaryChannel"
+        IC2 = "interChannel"
+        L = "lobe"
+        LF = "lobeFringe"
+        BP = "basinPlain"
+
+        tuples = [
+            (FC, [FC, DC, IC1]),
+            (IC1, [IC1, DC]),
+            (DC, [DC, IC2, L]),
+            (IC2, [IC2, L]),
+            (L, [L, LF]),
+            (LF, [LF, BP]),
+            (BP, [BP])
+            ]
+
+        #number_of_units = 5
+
+        first_word = tuples[0][0]
+
+        for i in range(len(tuples)):
+            first_word = tuples[0][0]
+            self.recursive_environment_permutate(tuples, number_of_units, first_word, [first_word])
+            tuples.pop(0)
+
+        #pp = pprint.PrettyPrinter(width=len(DC)*(number_of_units+1))
+        #pp.pprint(self.environment_permutations)
+
+    def recursive_environment_permutate(self, tuples, units, current_word, output):
+        tuples_here = tuples.copy()
+
+        # this is done to ensure the correct ordering of environments
+        first_word = tuples_here[0][0]
+        while first_word != current_word:
+            tuples_here.pop(0)
+            first_word = tuples_here[0][0]
+
+
+        # base case when there are no keywords left or no units left
+        if units == 2:
+            # units == 2 because 1 added before and 1 added here
+            for w in tuples_here[0][1]:
+                new_output = output.copy()
+                new_output.append(w)
+                self.environment_permutations.append(new_output)
+                #print(new_output)
+            return
+
+        new_tuples = tuples_here.copy()
+
+        for w in tuples_here[0][1]:
+            # remove top tuple when it is not a part of the permutation
+            if w != current_word:
+                new_tuples = tuples_here.copy()
+                new_tuples.pop(0)
+
+            new_output = output.copy()
+            new_output.append(w)
+
+            self.recursive_environment_permutate(new_tuples, units-1, w, new_output)
+
+    def find_stuff(self, config):
+        #for config in self.initial_configs:
+
+        faults = self.find_faults(config)
+        sandstones = self.find_sandstones(config)
+
+        unit_tuple = (faults, sandstones)
+        return unit_tuple
+        #self.units.append(unit_tuple)
+
+        #self.pp.pprint(self.units)
+
+    def find_pattern_in_text(self, text, pattern):
+        return re.findall(pattern, text, flags=re.IGNORECASE | re.DOTALL)
+
+
+    def find_faults(self, text):
+        regex = r'<[^>]*?Fault . FType[^>]*?>'
+        return self.find_pattern_in_text(text, regex)
+
+    def find_sandstones(self, text):
+        regex = r'< \d+ : GeoUnit[^>]*?sandstone[^>]*?>'
+        return self.find_pattern_in_text(text, regex)
+
+    #def replace_pattern(self, text, permutations, pattern, comments):
+    def replace_pattern(self, config, permutations, pattern):
+        for permutation in permutations:
+            text = config
+            for value in permutation:
+                object = re.search(pattern, text).group(1)
+                geo_unit_id = re.search(r"< (\d+)", object).group(1)
+                text = re.sub(pattern, r'\g<1>' + value + r'\g<2>', text, count=1)
+                #comment = comments + "--- Geo-unit " + geo_unit_id + " is assumed to be " + value + "\n"
+            self.wip.append(text)
+
+
+        """
+        values = values.copy()
+
+        # base case, no more things to replace for the current pattern
+        if not re.search(pattern, text):
+            self.temp_configs.append(text)
+
+        for value in values:
+            object = re.search(pattern, text).group(1)
+            geo_unit_id = re.search(r"<(\d+)", object).group(1)
+            result = re.sub(pattern, r'\<g1>' + value + r'\<g2>', text, count=1)
+            comment = comments + "--- Geo-unit " + geo_unit_id + " is assumed to be " + value + "\n"
+
+            self.replace_pattern(result, values, pattern, comment)
+        """
+
+
+
+a = Expander()
+a.extend_config_file("env-init2.maude")
