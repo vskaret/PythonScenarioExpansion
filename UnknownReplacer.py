@@ -4,6 +4,8 @@ import pprint, re
 class Expander():
 
     def __init__(self):
+        self.output_dir = ""
+
         self.permutation_lists = []
         self.regex_pattern_lists = []
 
@@ -28,14 +30,20 @@ class Expander():
     def write_output_to_file(self, output):
         comments = ""
 
+        print(output)
+
         operator_name = re.search(r"eq (\S+)", output).group(1)
         operator_text = "\n\n\n op " + operator_name + "-" + str(self.equation_number) + " : -> Configuration [ctor] .\n"
         equation_text = "  eq " + operator_name + str(self.equation_number) + output + "\n"
 
-        filename = operator_name + "-" + str(self.equation_number) + ".maude"
+        # TODO: improve how this is done?
+        if len(self.outputs[0]) > 1:
+            filename = operator_name + "-" + str(self.equation_number) + ".maude"
+        else:
+            filename = operator_name + ".maude"
         out = "\n" + comments + operator_text + equation_text
 
-        with open(filename, 'w') as outfile:
+        with open(self.output_dir + "/" + filename, 'w') as outfile:
             outfile.write("mod GEO-INIT is\n")
             outfile.write("  protecting GEO-DEFINITION .\n")
             outfile.write("  protecting GEO-FUNCS .\n")
@@ -61,15 +69,20 @@ class Expander():
         #self.pp.pprint(initial_configs)
         #print(len(initial_configs))
 
-    def extend_config_file(self, filename):
+    def extend_config_file(self, filename, output_dir):
+        self.output_dir = output_dir
+
         self.read_config_file(filename)
         for config in self.initial_configs:
             self.generate_stuff(config)
 
             self.equation_number = 0
-            for output in self.outputs:
-                self.write_output_to_file(output)
-                self.equation_number += 1
+            if len(self.outputs[0]) > 1:
+                for output in self.outputs:
+                    self.write_output_to_file(output)
+                    self.equation_number += 1
+            else:
+                self.write_output_to_file(self.outputs)
 
     def generate_stuff(self, config):
         #config = self.initial_configs[0]
@@ -77,17 +90,24 @@ class Expander():
 
         #t = self.units[0]
         t = units
-        number_of_faults = len(t[0])
-        number_of_sandstones = len(t[1])
+        number_of_unknown_faults = len(t[0])
+        number_of_unknown_sandstones = len(t[1])
 
-        print("faults: " + str(number_of_faults))
-        print("sandstones: " + str(number_of_sandstones))
+        print("faults: " + str(number_of_unknown_faults))
+        print("sandstones: " + str(number_of_unknown_sandstones))
 
-        self.generate_other_permutations(number_of_faults, ["sealing", "non-sealing"])
-        self.generate_environment_permutations(number_of_sandstones)
+        ### permutation generation (lists) ###
+
+        #if number_of_unknown_faults > 0:
+        self.generate_other_permutations(number_of_unknown_faults, ["sealing", "non-sealing"])
+
+        #if number_of_unknown_sandstones > 0:
+        self.generate_environment_permutations(number_of_unknown_sandstones)
 
         #self.pprint(self.other_permutations)
         #self.pprint(self.environment_permutations)
+
+        #exit(0)
 
         # regexes
         unknown = r"unknown"
@@ -103,36 +123,26 @@ class Expander():
             (submarinefan_sandstone_pattern, self.environment_permutations)
         ]
 
+        ### replace unknowns in the configs ###
+
         self.temp_configs = self.initial_configs
         self.wip = []
 
         for pattern, permutation in pattern_permutation_pairs:
-            for config in self.temp_configs:
-                self.replace_pattern(config, permutation, pattern)
+            #for config in self.temp_configs:
+            self.replace_pattern(config, permutation, pattern)
 
             self.temp_configs = self.wip
             self.wip = []
 
         self.outputs = self.temp_configs
 
-        #for temp in self.temp_configs:
-            #print(temp)
-            #print("\n\n\n\n\n\n")
-        ##self.pprint(self.temp_configs)
-        """
-        for a in t[0]:
-            print(a)
-            print("*")
-
-        print("****")
-
-        for b in t[1]:
-            print(b)
-            print("*")
-        """
-
+        # TODO: improve how this is done?
+        if number_of_unknown_sandstones == 0 and number_of_unknown_faults == 0:
+            self.outputs = config
 
     def generate_other_permutations(self, number_of_units, values):
+        # reset permutation list
         self.other_permutations = []
 
         self.recursive_other_permutate(number_of_units, values, [])
@@ -143,7 +153,7 @@ class Expander():
 
     def recursive_other_permutate(self, number_of_units, values, output):
 
-        if number_of_units == 0:
+        if number_of_units <= 0:
             #self.other_permutations[-1].append(output) # always append to the last list
             self.other_permutations.append(output)
             return
@@ -154,6 +164,9 @@ class Expander():
             self.recursive_other_permutate(number_of_units-1, values, new_output)
 
     def generate_environment_permutations(self, number_of_units):
+        # reset permutation list
+        self.environment_permutations = []
+
         FC = "feederChannel"
         IC1 = "interChannel"
         DC = "distributaryChannel"
@@ -176,10 +189,17 @@ class Expander():
 
         first_word = tuples[0][0]
 
-        for i in range(len(tuples)):
-            first_word = tuples[0][0]
-            self.recursive_environment_permutate(tuples, number_of_units, first_word, [first_word])
-            tuples.pop(0)
+        if number_of_units > 1:
+            for i in range(len(tuples)):
+                first_word = tuples[0][0]
+                self.recursive_environment_permutate(tuples, number_of_units, first_word, [first_word])
+                tuples.pop(0)
+        elif number_of_units == 1:
+            self.environment_permutations = [
+                [FC], [IC1], [DC], [L], [LF], [BP]
+            ]
+        else:
+            return
 
         #pp = pprint.PrettyPrinter(width=len(DC)*(number_of_units+1))
         #pp.pprint(self.environment_permutations)
@@ -195,7 +215,7 @@ class Expander():
 
 
         # base case when there are no keywords left or no units left
-        if units == 2:
+        if units <= 2:
             # units == 2 because 1 added before and 1 added here
             for w in tuples_here[0][1]:
                 new_output = output.copy()
@@ -234,19 +254,28 @@ class Expander():
 
 
     def find_faults(self, text):
-        regex = r'<[^>]*?Fault . FType[^>]*?>'
+        #regex = r'<[^>]*?Fault . FType[^>]*?>'
+        regex = r'<[^>]*?Fault[^>]*Filling: unknown'
         return self.find_pattern_in_text(text, regex)
 
     def find_sandstones(self, text):
-        regex = r'< \d+ : GeoUnit[^>]*?sandstone[^>]*?>'
+        #regex = r'< \d+ : GeoUnit[^>]*?sandstone[^>]*?>'
+        regex = r'<[^>]*?Type: sandstone[^>]*?SubmarineFan: unknown'
         return self.find_pattern_in_text(text, regex)
 
     #def replace_pattern(self, text, permutations, pattern, comments):
     def replace_pattern(self, config, permutations, pattern):
+        print("new replacement process")
         for permutation in permutations:
             text = config
             for value in permutation:
-                object = re.search(pattern, text).group(1)
+                #print(permutation, value)
+                try:
+                    object = re.search(pattern, text).group(1)
+                except Exception:
+                    print(text)
+                    print(permutations)
+                    exit(0)
                 geo_unit_id = re.search(r"< (\d+)", object).group(1)
                 text = re.sub(pattern, r'\g<1>' + value + r'\g<2>', text, count=1)
                 #comment = comments + "--- Geo-unit " + geo_unit_id + " is assumed to be " + value + "\n"
@@ -271,5 +300,5 @@ class Expander():
 
 
 
-a = Expander()
-a.extend_config_file("env-init2.maude")
+#a = Expander()
+#a.extend_config_file("env-init2.maude")
