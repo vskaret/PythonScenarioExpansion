@@ -30,7 +30,6 @@ class Expander():
     def write_output_to_file(self, output):
         comments = ""
 
-        print(output)
 
         operator_name = re.search(r"eq (\S+)", output).group(1)
         operator_text = "\n\n\n op " + operator_name + "-" + str(self.equation_number) + " : -> Configuration [ctor] .\n"
@@ -105,7 +104,7 @@ class Expander():
         self.generate_environment_permutations(number_of_unknown_sandstones)
 
         #self.pprint(self.other_permutations)
-        #self.pprint(self.environment_permutations)
+        self.pprint(self.environment_permutations)
 
         #exit(0)
 
@@ -194,6 +193,9 @@ class Expander():
                 first_word = tuples[0][0]
                 self.recursive_environment_permutate(tuples, number_of_units, first_word, [first_word])
                 tuples.pop(0)
+
+            # add case with only interChannels
+            self.environment_permutations.append([IC1]*number_of_units)
         elif number_of_units == 1:
             self.environment_permutations = [
                 [FC], [IC1], [DC], [L], [LF], [BP]
@@ -220,7 +222,9 @@ class Expander():
             for w in tuples_here[0][1]:
                 new_output = output.copy()
                 new_output.append(w)
-                self.environment_permutations.append(new_output)
+
+                if new_output[0] != "interChannel" or new_output[-1] != "interChannel":
+                    self.environment_permutations.append(new_output)
                 #print(new_output)
             return
 
@@ -265,7 +269,6 @@ class Expander():
 
     #def replace_pattern(self, text, permutations, pattern, comments):
     def replace_pattern(self, config, permutations, pattern):
-        print("new replacement process")
         for permutation in permutations:
             text = config
             for value in permutation:
