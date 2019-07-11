@@ -13,7 +13,8 @@ generate multiple scenarios for all of them (some will be overwritten).
 - The input file consists only of configurations (no other kinds of equations or rewrite rules).
 - The script uses regular expressions in python to search and replace the keyword 'unknown' in specific contexts in
 the maude initial configuration. So it's assumed that the input file follows a specific structure which can be seen
-examples of in the configs directory.
+examples of in the configs directory. Currently there's very little exception handling for when the input file doesn't
+follow the assumed structure.
 
 ## Other
 - The script has been developed and tested in Python 3.5.2, but it will probably work for most (all?) versions of Python 3.
