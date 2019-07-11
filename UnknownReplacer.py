@@ -92,8 +92,8 @@ class Expander():
         number_of_unknown_faults = len(t[0])
         number_of_unknown_sandstones = len(t[1])
 
-        print("faults: " + str(number_of_unknown_faults))
-        print("sandstones: " + str(number_of_unknown_sandstones))
+        #print("faults: " + str(number_of_unknown_faults))
+        #print("sandstones: " + str(number_of_unknown_sandstones))
 
         ### permutation generation (lists) ###
 
@@ -104,7 +104,7 @@ class Expander():
         self.generate_environment_permutations(number_of_unknown_sandstones)
 
         #self.pprint(self.other_permutations)
-        self.pprint(self.environment_permutations)
+        #self.pprint(self.environment_permutations)
 
         #exit(0)
 
