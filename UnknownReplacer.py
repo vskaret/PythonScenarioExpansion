@@ -92,13 +92,16 @@ class Expander():
         number_of_unknown_faults = len(t[0])
         number_of_unknown_sandstones = len(t[1])
 
-        #print("faults: " + str(number_of_unknown_faults))
-        #print("sandstones: " + str(number_of_unknown_sandstones))
+        print("faults: " + str(number_of_unknown_faults))
+        print("sandstones: " + str(number_of_unknown_sandstones))
 
         ### permutation generation (lists) ###
 
         #if number_of_unknown_faults > 0:
         self.generate_other_permutations(number_of_unknown_faults, ["sealing", "non-sealing"])
+
+        #self.pprint(self.other_permutations)
+        #exit(0)
 
         #if number_of_unknown_sandstones > 0:
         self.generate_environment_permutations(number_of_unknown_sandstones)
@@ -118,18 +121,19 @@ class Expander():
         submarinefan_sandstone_pattern = re.compile(sandstone_submarinefan + unknown + end, flags=re.DOTALL)
 
         pattern_permutation_pairs = [
+            (submarinefan_sandstone_pattern, self.environment_permutations),
             (fault_filling_pattern, self.other_permutations),
-            (submarinefan_sandstone_pattern, self.environment_permutations)
         ]
 
         ### replace unknowns in the configs ###
 
-        self.temp_configs = self.initial_configs
+        #self.temp_configs = self.initial_configs
+        self.temp_configs = [config]
         self.wip = []
 
         for pattern, permutation in pattern_permutation_pairs:
-            #for config in self.temp_configs:
-            self.replace_pattern(config, permutation, pattern)
+            for config in self.temp_configs:
+                self.replace_pattern(config, permutation, pattern)
 
             self.temp_configs = self.wip
             self.wip = []
@@ -276,9 +280,12 @@ class Expander():
                 try:
                     object = re.search(pattern, text).group(1)
                 except Exception:
+                    print("exception in replace_pattern()")
                     print(text)
                     print(permutations)
-                    exit(0)
+                    print(pattern)
+                    return
+                    #exit(0)
                 geo_unit_id = re.search(r"< (\d+)", object).group(1)
                 text = re.sub(pattern, r'\g<1>' + value + r'\g<2>', text, count=1)
                 #comment = comments + "--- Geo-unit " + geo_unit_id + " is assumed to be " + value + "\n"
