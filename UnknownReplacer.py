@@ -30,10 +30,12 @@ class Expander():
     def write_output_to_file(self, output):
         comments = ""
 
-
         operator_name = re.search(r"eq (\S+)", output).group(1)
         operator_text = "\n\n\n op " + operator_name + "-" + str(self.equation_number) + " : -> Configuration [ctor] .\n"
-        equation_text = "  eq " + operator_name + str(self.equation_number) + output + "\n"
+
+        left, right = output.split('=')
+
+        equation_text = " eq " + operator_name + "-" + str(self.equation_number) + "\n =" + right + "\n"
 
         # TODO: improve how this is done?
         if len(self.outputs[0]) > 1:
