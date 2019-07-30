@@ -73,7 +73,7 @@ mod GEO-INIT is
    --- default values ---
    trapformation(5,none,nil,undefined) trapformation(8,none,nil,undefined) trapformation(11,none,nil,undefined) trapformation(14,none,nil,undefined)
    accumulation(5,false) accumulation(8,false) accumulation(11,false) accumulation(14,false) 
-   history("init") .
+   history(emptyStr) .
 
     
     
@@ -145,7 +145,7 @@ mod GEO-INIT is
    --- default values ---
    trapformation(5,none,nil,undefined) trapformation(8,none,nil,undefined) trapformation(11,none,nil,undefined) trapformation(14,none,nil,undefined)
    accumulation(5,false) accumulation(8,false) accumulation(11,false) accumulation(14,false) 
-   history("init") .    
+   history(emptyStr) .    
 
 
     
@@ -216,7 +216,7 @@ mod GEO-INIT is
    --- default values ---
    trapformation(5,none,nil,undefined) trapformation(8,none,nil,undefined) trapformation(11,none,nil,undefined) trapformation(14,none,nil,undefined)
    accumulation(5,false) accumulation(8,false) accumulation(11,false) accumulation(14,false) 
-   history("init") .
+   history(emptyStr) .
 
         
 endm
