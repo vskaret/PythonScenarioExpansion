@@ -77,7 +77,7 @@ class Expander():
         for config in self.initial_configs:
             self.generate_stuff(config)
 
-            self.equation_number = 0
+            self.equation_number = 1
             if len(self.outputs[0]) > 1:
                 for output in self.outputs:
                     self.write_output_to_file(output)
