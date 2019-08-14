@@ -95,22 +95,38 @@ class Expander():
         number_of_unknown_sandstones = len(t[1])
         number_of_unknown_shales = len(t[2])
 
+        # these strings should be calls to ontology
+        # or maybe the permutation generation should be a call to the ontology? but then need to
+        # provide number of units
+        shale_submarinefan = "basinPlain"
+        permeable = "permeable"
+        non_permeable = "non-permeable"
+        porous = "porous"
+        non_porous = "non-porous"
+        fault_fillings = ["sealing", "non-sealing"]
+
         print("#faults: " + str(number_of_unknown_faults))
         print("#sandstones: " + str(number_of_unknown_sandstones))
         print("#shales: " + str(number_of_unknown_shales))
 
         ### permutation generation (lists) ###
 
-        shale_permutations = self.generate_other_permutations(number_of_unknown_shales, ["basinPlain"])
+        #shale_permutations = self.generate_other_permutations(number_of_unknown_shales, ["basinPlain"])
+        shale_sub_perms = self.generate_other_permutations(number_of_unknown_shales, [shale_submarinefan])
+        shale_perm_perms = self.generate_other_permutations(number_of_unknown_shales, [non_permeable])
+        shale_porous_perms = self.generate_other_permutations(number_of_unknown_shales, [non_porous])
 
         #if number_of_unknown_faults > 0:
-        fault_permutations = self.generate_other_permutations(number_of_unknown_faults, ["sealing", "non-sealing"])
+        #fault_perms = self.generate_other_permutations(number_of_unknown_faults, ["sealing", "non-sealing"])
+        fault_fill_perms = self.generate_other_permutations(number_of_unknown_faults, fault_fillings)
 
         #self.pprint(self.other_permutations)
         #exit(0)
 
         #if number_of_unknown_sandstones > 0:
         self.generate_environment_permutations(number_of_unknown_sandstones)
+        sandstone_perm_perms = self.generate_other_permutations(number_of_unknown_sandstones, [permeable])
+        sandstone_porous_perms = self.generate_other_permutations(number_of_unknown_sandstones, [porous])
 
         #self.pprint(self.other_permutations)
         #self.pprint(self.environment_permutations)
@@ -121,19 +137,38 @@ class Expander():
         unknown = r"unknown"
         end = r"([^>]*?>)"
         submarinefan = r"[^>]*?SubmarineFan: "
+        permeability = r"[^>]*?Permeability: "
+        porosity = r"[^>]*?Porosity: "
         fault_filling = r"(<[^>]*?Fault[^>]*?Filling: )"
-        fault_filling_pattern = re.compile(fault_filling + unknown + end, flags=re.DOTALL)
         sandstone = r"<[^>]*?Type: sandstone"
         shale = r"<[^>]*?Type: shale"
+
         sandstone_submarinefan = r"(" + sandstone + submarinefan + r")"
+        sandstone_permeability = r"(" + sandstone + permeability + r")"
+        sandstone_porosity = r"(" + sandstone + porosity + r")"
         shale_submarinefan = r"(" + shale + submarinefan + r")"
+        shale_permeability = r"(" + shale + permeability + r")"
+        shale_porosity = r"(" + shale + porosity + r")"
+
+
+        fault_filling_pattern = re.compile(fault_filling + unknown + end, flags=re.DOTALL)
+
         submarinefan_sandstone_pattern = re.compile(sandstone_submarinefan + unknown + end, flags=re.DOTALL)
+        sandstone_permeability_pattern = re.compile(sandstone_permeability + unknown + end, flags=re.DOTALL)
+        sandstone_porosity_pattern = re.compile(sandstone_porosity + unknown + end, flags=re.DOTALL)
+
         shale_submarinefan_pattern = re.compile(shale_submarinefan + unknown + end, flags=re.DOTALL)
+        shale_permeability_pattern = re.compile(shale_permeability + unknown + end, flags=re.DOTALL)
+        shale_porosity_pattern = re.compile(shale_porosity + unknown + end, flags=re.DOTALL)
 
         pattern_permutation_pairs = [
             (submarinefan_sandstone_pattern, self.environment_permutations),
-            (shale_submarinefan_pattern, shale_permutations),
-            (fault_filling_pattern, fault_permutations),
+            (sandstone_permeability_pattern, sandstone_perm_perms),
+            (sandstone_porosity_pattern, sandstone_porous_perms),
+            (shale_submarinefan_pattern, shale_sub_perms),
+            (shale_permeability_pattern, shale_perm_perms),
+            (shale_porosity_pattern, shale_porous_perms),
+            (fault_filling_pattern, fault_fill_perms),
         ]
 
         ### replace unknowns in the configs ###
@@ -179,6 +214,7 @@ class Expander():
             new_output.append(value)
             self.recursive_other_permutate(number_of_units-1, values, new_output)
 
+    # how to do this with the ontology?
     def generate_environment_permutations(self, number_of_units):
         # reset permutation list
         self.environment_permutations = []
