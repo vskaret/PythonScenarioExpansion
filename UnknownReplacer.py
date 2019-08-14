@@ -93,14 +93,18 @@ class Expander():
         t = units
         number_of_unknown_faults = len(t[0])
         number_of_unknown_sandstones = len(t[1])
+        number_of_unknown_shales = len(t[2])
 
-        print("faults: " + str(number_of_unknown_faults))
-        print("sandstones: " + str(number_of_unknown_sandstones))
+        print("#faults: " + str(number_of_unknown_faults))
+        print("#sandstones: " + str(number_of_unknown_sandstones))
+        print("#shales: " + str(number_of_unknown_shales))
 
         ### permutation generation (lists) ###
 
+        shale_permutations = self.generate_other_permutations(number_of_unknown_shales, ["basinPlain"])
+
         #if number_of_unknown_faults > 0:
-        self.generate_other_permutations(number_of_unknown_faults, ["sealing", "non-sealing"])
+        fault_permutations = self.generate_other_permutations(number_of_unknown_faults, ["sealing", "non-sealing"])
 
         #self.pprint(self.other_permutations)
         #exit(0)
@@ -116,15 +120,20 @@ class Expander():
         # regexes
         unknown = r"unknown"
         end = r"([^>]*?>)"
+        submarinefan = r"[^>]*?SubmarineFan: "
         fault_filling = r"(<[^>]*?Fault[^>]*?Filling: )"
         fault_filling_pattern = re.compile(fault_filling + unknown + end, flags=re.DOTALL)
         sandstone = r"<[^>]*?Type: sandstone"
-        sandstone_submarinefan = r"(" + sandstone + r"[^>]*?SubmarineFan: )"
+        shale = r"<[^>]*?Type: shale"
+        sandstone_submarinefan = r"(" + sandstone + submarinefan + r")"
+        shale_submarinefan = r"(" + shale + submarinefan + r")"
         submarinefan_sandstone_pattern = re.compile(sandstone_submarinefan + unknown + end, flags=re.DOTALL)
+        shale_submarinefan_pattern = re.compile(shale_submarinefan + unknown + end, flags=re.DOTALL)
 
         pattern_permutation_pairs = [
             (submarinefan_sandstone_pattern, self.environment_permutations),
-            (fault_filling_pattern, self.other_permutations),
+            (shale_submarinefan_pattern, shale_permutations),
+            (fault_filling_pattern, fault_permutations),
         ]
 
         ### replace unknowns in the configs ###
@@ -151,6 +160,8 @@ class Expander():
         self.other_permutations = []
 
         self.recursive_other_permutate(number_of_units, values, [])
+
+        return self.other_permutations.copy()
 
         #pp = pprint.PrettyPrinter(width=50*(number_of_units+1))
         #pp.pprint(self.all_permutations)
@@ -252,8 +263,9 @@ class Expander():
 
         faults = self.find_faults(config)
         sandstones = self.find_sandstones(config)
+        shales = self.find_shales(config)
 
-        unit_tuple = (faults, sandstones)
+        unit_tuple = (faults, sandstones, shales)
         return unit_tuple
         #self.units.append(unit_tuple)
 
@@ -271,6 +283,11 @@ class Expander():
     def find_sandstones(self, text):
         #regex = r'< \d+ : GeoUnit[^>]*?sandstone[^>]*?>'
         regex = r'<[^>]*?Type: sandstone[^>]*?SubmarineFan: unknown'
+        return self.find_pattern_in_text(text, regex)
+
+    def find_shales(self, text):
+        #regex = r'< \d+ : GeoUnit[^>]*?sandstone[^>]*?>'
+        regex = r'<[^>]*?Type: shale[^>]*?SubmarineFan: unknown'
         return self.find_pattern_in_text(text, regex)
 
     #def replace_pattern(self, text, permutations, pattern, comments):
