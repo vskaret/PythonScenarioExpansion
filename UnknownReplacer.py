@@ -125,8 +125,10 @@ class Expander():
 
         #if number_of_unknown_sandstones > 0:
         self.generate_environment_permutations(number_of_unknown_sandstones)
-        sandstone_perm_perms = self.generate_other_permutations(number_of_unknown_sandstones, [permeable])
-        sandstone_porous_perms = self.generate_other_permutations(number_of_unknown_sandstones, [porous])
+
+        # TODO: fix unknown replacement of sandstone submarinefan - they're not all permeable and porous
+        #sandstone_perm_perms = self.generate_other_permutations(number_of_unknown_sandstones, [permeable])
+        #sandstone_porous_perms = self.generate_other_permutations(number_of_unknown_sandstones, [porous])
 
         #self.pprint(self.other_permutations)
         #self.pprint(self.environment_permutations)
@@ -163,8 +165,8 @@ class Expander():
 
         pattern_permutation_pairs = [
             (submarinefan_sandstone_pattern, self.environment_permutations),
-            (sandstone_permeability_pattern, sandstone_perm_perms),
-            (sandstone_porosity_pattern, sandstone_porous_perms),
+            #(sandstone_permeability_pattern, sandstone_perm_perms),
+            #(sandstone_porosity_pattern, sandstone_porous_perms),
             (shale_submarinefan_pattern, shale_sub_perms),
             (shale_permeability_pattern, shale_perm_perms),
             (shale_porosity_pattern, shale_porous_perms),
