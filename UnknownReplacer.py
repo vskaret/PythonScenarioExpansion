@@ -40,8 +40,6 @@ class Expander():
         }
 
 
-
-
     def pprint(self, l):
         self.pp.pprint(l)
 
@@ -72,7 +70,6 @@ class Expander():
             outfile.write("\nendm")
 
 
-    #def read_config_file(self, filename):
     def read_config_file(self, filename):
         # reset configs so only current file is in memory
         self.initial_configs = []
@@ -210,10 +207,6 @@ class Expander():
 
         return self.other_permutations.copy()
 
-        #pp = pprint.PrettyPrinter(width=50*(number_of_units+1))
-        #pp.pprint(self.all_permutations)
-
-
     def recursive_other_permutate(self, number_of_units, values, output):
 
         if number_of_units <= 0:
@@ -249,8 +242,6 @@ class Expander():
             (BP, [BP])
             ]
 
-        #number_of_units = 5
-
         first_word = tuples[0][0]
 
         if number_of_units > 1:
@@ -269,9 +260,6 @@ class Expander():
             return #self.environment_permutations
 
         return self.environment_permutations
-
-        #pp = pprint.PrettyPrinter(width=len(DC)*(number_of_units+1))
-        #pp.pprint(self.environment_permutations)
 
     def recursive_environment_permutate(self, tuples, units, current_word, output):
         tuples_here = tuples.copy()
@@ -331,26 +319,20 @@ class Expander():
 
         unit_tuple = (faults, sandstones, shales)
         return unit_tuple
-        #self.units.append(unit_tuple)
-
-        #self.pp.pprint(self.units)
 
     def find_pattern_in_text(self, text, pattern):
         return re.findall(pattern, text, flags=re.IGNORECASE | re.DOTALL)
 
 
     def find_faults(self, text):
-        #regex = r'<[^>]*?Fault . FType[^>]*?>'
         regex = r'<[^>]*?Fault[^>]*Filling: unknown'
         return self.find_pattern_in_text(text, regex)
 
     def find_sandstones(self, text):
-        #regex = r'< \d+ : GeoUnit[^>]*?sandstone[^>]*?>'
         regex = r'<[^>]*?Type: sandstone[^>]*?SubmarineFan: unknown'
         return self.find_pattern_in_text(text, regex)
 
     def find_shales(self, text):
-        #regex = r'< \d+ : GeoUnit[^>]*?sandstone[^>]*?>'
         regex = r'<[^>]*?Type: shale[^>]*?SubmarineFan: unknown'
         return self.find_pattern_in_text(text, regex)
 
@@ -399,23 +381,4 @@ class Expander():
 
             self.temp_configs = self.wip
             self.wip = []
-        """
-        values = values.copy()
 
-        # base case, no more things to replace for the current pattern
-        if not re.search(pattern, text):
-            self.temp_configs.append(text)
-
-        for value in values:
-            object = re.search(pattern, text).group(1)
-            geo_unit_id = re.search(r"<(\d+)", object).group(1)
-            result = re.sub(pattern, r'\<g1>' + value + r'\<g2>', text, count=1)
-            comment = comments + "--- Geo-unit " + geo_unit_id + " is assumed to be " + value + "\n"
-
-            self.replace_pattern(result, values, pattern, comment)
-        """
-
-
-
-#a = Expander()
-#a.extend_config_file("env-init2.maude")
