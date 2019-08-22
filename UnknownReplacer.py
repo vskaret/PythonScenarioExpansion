@@ -22,6 +22,24 @@ class Expander():
 
         self.equation_number = 0
 
+        self.sandstone_porosities = {
+            "interChannel" : "non-porous",
+            "feederChannel" : "porous",
+            "distributaryChannel" : "porous",
+            "lobe" : "porous",
+            "lobeFringe" : "porous",
+            "basinPlain" : "non-porous"
+        }
+        self.sandstone_permeabilities = {
+            "interChannel" : "non-permeable",
+            "feederChannel" : "permeable",
+            "distributaryChannel" : "permeable",
+            "lobe" : "permeable",
+            "lobeFringe" : "non-permeable",
+            "basinPlain" : "non-permeable"
+        }
+
+
 
 
     def pprint(self, l):
@@ -117,23 +135,12 @@ class Expander():
         shale_porous_perms = self.generate_other_permutations(number_of_unknown_shales, [non_porous])
 
         #if number_of_unknown_faults > 0:
-        #fault_perms = self.generate_other_permutations(number_of_unknown_faults, ["sealing", "non-sealing"])
         fault_fill_perms = self.generate_other_permutations(number_of_unknown_faults, fault_fillings)
 
-        #self.pprint(self.other_permutations)
-        #exit(0)
-
         #if number_of_unknown_sandstones > 0:
-        self.generate_environment_permutations(number_of_unknown_sandstones)
-
-        # TODO: fix unknown replacement of sandstone submarinefan - they're not all permeable and porous
-        #sandstone_perm_perms = self.generate_other_permutations(number_of_unknown_sandstones, [permeable])
-        #sandstone_porous_perms = self.generate_other_permutations(number_of_unknown_sandstones, [porous])
-
-        #self.pprint(self.other_permutations)
-        #self.pprint(self.environment_permutations)
-
-        #exit(0)
+        env_perms = self.generate_environment_permutations(number_of_unknown_sandstones)
+        porous_perms = self.generate_permutations_with_lookuptable(env_perms, self.sandstone_porosities)
+        permeable_perms = self.generate_permutations_with_lookuptable(env_perms, self.sandstone_permeabilities)
 
         # regexes
         unknown = r"unknown"
@@ -145,6 +152,7 @@ class Expander():
         sandstone = r"<[^>]*?Type: sandstone"
         shale = r"<[^>]*?Type: shale"
 
+
         sandstone_submarinefan = r"(" + sandstone + submarinefan + r")"
         sandstone_permeability = r"(" + sandstone + permeability + r")"
         sandstone_porosity = r"(" + sandstone + porosity + r")"
@@ -152,10 +160,11 @@ class Expander():
         shale_permeability = r"(" + shale + permeability + r")"
         shale_porosity = r"(" + shale + porosity + r")"
 
-
         fault_filling_pattern = re.compile(fault_filling + unknown + end, flags=re.DOTALL)
 
         submarinefan_sandstone_pattern = re.compile(sandstone_submarinefan + unknown + end, flags=re.DOTALL)
+
+        # sandstone permeabilities
         sandstone_permeability_pattern = re.compile(sandstone_permeability + unknown + end, flags=re.DOTALL)
         sandstone_porosity_pattern = re.compile(sandstone_porosity + unknown + end, flags=re.DOTALL)
 
@@ -163,30 +172,31 @@ class Expander():
         shale_permeability_pattern = re.compile(shale_permeability + unknown + end, flags=re.DOTALL)
         shale_porosity_pattern = re.compile(shale_porosity + unknown + end, flags=re.DOTALL)
 
+
+        ### replace unknowns in the configs ###
+        self.temp_configs = [config]
+        self.run_replacement([(submarinefan_sandstone_pattern, self.environment_permutations)])
+
+
+        permeable_porous_tuples = [
+            (sandstone_permeability_pattern, permeable_perms),
+            (sandstone_porosity_pattern, porous_perms)
+        ]
+
+        # replaces unknown for porosity and permeable
+        # must be ran after submarinefan replacement and before the rest
+        self.run_one_to_one_replacement(permeable_porous_tuples)
+
         pattern_permutation_pairs = [
-            (submarinefan_sandstone_pattern, self.environment_permutations),
-            #(sandstone_permeability_pattern, sandstone_perm_perms),
-            #(sandstone_porosity_pattern, sandstone_porous_perms),
             (shale_submarinefan_pattern, shale_sub_perms),
             (shale_permeability_pattern, shale_perm_perms),
             (shale_porosity_pattern, shale_porous_perms),
             (fault_filling_pattern, fault_fill_perms),
         ]
-
-        ### replace unknowns in the configs ###
-
-        #self.temp_configs = self.initial_configs
-        self.temp_configs = [config]
-        self.wip = []
-
-        for pattern, permutation in pattern_permutation_pairs:
-            for config in self.temp_configs:
-                self.replace_pattern(config, permutation, pattern)
-
-            self.temp_configs = self.wip
-            self.wip = []
+        self.run_replacement(pattern_permutation_pairs)
 
         self.outputs = self.temp_configs
+
 
         # TODO: improve how this is done?
         if number_of_unknown_sandstones == 0 and number_of_unknown_faults == 0:
@@ -256,7 +266,9 @@ class Expander():
                 [FC], [IC1], [DC], [L], [LF], [BP]
             ]
         else:
-            return
+            return #self.environment_permutations
+
+        return self.environment_permutations
 
         #pp = pprint.PrettyPrinter(width=len(DC)*(number_of_units+1))
         #pp.pprint(self.environment_permutations)
@@ -295,6 +307,20 @@ class Expander():
             new_output.append(w)
 
             self.recursive_environment_permutate(new_tuples, units-1, w, new_output)
+
+    def generate_permutations_with_lookuptable(self, lookup_permutations, lookup_table):
+        porosity_permutations = []
+
+        for permutation in lookup_permutations:
+            current_porosity_permutation = []
+
+            for env in permutation:
+                current_porosity_permutation.append(lookup_table[env])
+
+            porosity_permutations.append(current_porosity_permutation)
+
+        return porosity_permutations
+
 
     def find_stuff(self, config):
         #for config in self.initial_configs:
@@ -348,7 +374,31 @@ class Expander():
                 #comment = comments + "--- Geo-unit " + geo_unit_id + " is assumed to be " + value + "\n"
             self.wip.append(text)
 
+    def run_replacement(self, pattern_permutation_pairs):
+        """Adds new configs"""
+        self.wip = []
 
+        for pattern, permutation in pattern_permutation_pairs:
+            for config in self.temp_configs:
+                self.replace_pattern(config, permutation, pattern)
+
+            self.temp_configs = self.wip
+            self.wip = []
+
+    def run_one_to_one_replacement(self, pattern_permutation_pairs):
+        """Does not add new configs - permutation[i] is only used for temp_config[i]"""
+
+
+        for pattern, perms in pattern_permutation_pairs:
+
+            if len(self.temp_configs) != len(perms):
+                raise Exception("Wrong number of permutations in run_one_to_one_replacement()")
+
+            for i in range(len(self.temp_configs)):
+                self.replace_pattern(self.temp_configs[i], [perms[i]], pattern)
+
+            self.temp_configs = self.wip
+            self.wip = []
         """
         values = values.copy()
 
