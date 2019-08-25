@@ -5,7 +5,7 @@ Scripts/programs for expanding an initial Maude configuration (scenario) for the
 $ python3 expansion_script.py path_to_init_config output_directory
 
 ## An example which should work after cloning the repository:
-$ python3 expansion_script.py configs/geo-init.maude outputs
+$ python3 expansion_script.py configs/relative-time.maude outputs
 
 ## Assumptions
 - It's assumed that all inital configurations in the maude input file have unique names, if not the script will not
