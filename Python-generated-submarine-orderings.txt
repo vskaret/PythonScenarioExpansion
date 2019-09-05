@@ -1,0 +1,72 @@
+feederChannel feederChannel feederChannel feederChannel
+feederChannel feederChannel feederChannel distributaryChannel
+feederChannel feederChannel feederChannel interChannel
+feederChannel feederChannel distributaryChannel distributaryChannel
+feederChannel feederChannel distributaryChannel interChannel
+feederChannel feederChannel distributaryChannel lobe
+feederChannel feederChannel interChannel interChannel
+feederChannel feederChannel interChannel distributaryChannel
+feederChannel distributaryChannel distributaryChannel distributaryChannel
+feederChannel distributaryChannel distributaryChannel interChannel
+feederChannel distributaryChannel distributaryChannel lobe
+feederChannel distributaryChannel interChannel interChannel
+feederChannel distributaryChannel interChannel lobe
+feederChannel distributaryChannel lobe lobe
+feederChannel distributaryChannel lobe lobeFringe
+feederChannel interChannel interChannel interChannel
+feederChannel interChannel interChannel distributaryChannel
+feederChannel interChannel distributaryChannel distributaryChannel
+feederChannel interChannel distributaryChannel interChannel
+feederChannel interChannel distributaryChannel lobe
+interChannel interChannel interChannel distributaryChannel
+interChannel interChannel distributaryChannel distributaryChannel
+interChannel interChannel distributaryChannel lobe
+interChannel distributaryChannel distributaryChannel distributaryChannel
+interChannel distributaryChannel distributaryChannel lobe
+interChannel distributaryChannel interChannel lobe
+interChannel distributaryChannel lobe lobe
+interChannel distributaryChannel lobe lobeFringe
+distributaryChannel distributaryChannel distributaryChannel distributaryChannel
+distributaryChannel distributaryChannel distributaryChannel interChannel
+distributaryChannel distributaryChannel distributaryChannel lobe
+distributaryChannel distributaryChannel interChannel interChannel
+distributaryChannel distributaryChannel interChannel lobe
+distributaryChannel distributaryChannel lobe lobe
+distributaryChannel distributaryChannel lobe lobeFringe
+distributaryChannel interChannel interChannel interChannel 
+distributaryChannel interChannel interChannel lobe
+distributaryChannel interChannel lobe lobe
+distributaryChannel interChannel lobe lobeFringe
+distributaryChannel lobe lobe lobe
+distributaryChannel lobe lobe lobeFringe
+distributaryChannel lobe lobeFringe lobeFringe
+distributaryChannel lobe lobeFringe basinPlain
+interChannel interChannel interChannel lobe
+interChannel interChannel lobe lobe
+interChannel interChannel lobe lobeFringe
+interChannel lobe lobe lobe
+interChannel lobe lobe lobeFringe
+interChannel lobe lobeFringe lobeFringe
+interChannel lobe lobeFringe basinPlain
+lobe lobe lobe lobe
+lobe lobe lobe lobeFringe
+lobe lobe lobeFringe lobeFringe
+lobe lobe lobeFringe basinPlain
+lobe lobeFringe lobeFringe lobeFringe
+lobe lobeFringe lobeFringe basinPlain
+lobe lobeFringe basinPlain basinPlain
+lobeFringe lobeFringe lobeFringe lobeFringe
+lobeFringe lobeFringe lobeFringe basinPlain
+lobeFringe lobeFringe basinPlain basinPlain
+lobeFringe basinPlain basinPlain basinPlain
+basinPlain basinPlain basinPlain basinPlain
+interChannel interChannel interChannel interChannel
+
+63 differences
+ 
+ 
+ 
+ 
+ 
+ 
+
