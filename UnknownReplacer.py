@@ -118,7 +118,7 @@ class Expander():
         non_permeable = "non-permeable"
         porous = "porous"
         non_porous = "non-porous"
-        fault_fillings = ["sealing", "non-sealing"]
+        fault_sealingCapacities = ["sealing", "non-sealing"]
 
         print("#faults: " + str(number_of_unknown_faults))
         print("#sandstones: " + str(number_of_unknown_sandstones))
@@ -132,7 +132,7 @@ class Expander():
         shale_porous_perms = self.generate_other_permutations(number_of_unknown_shales, [non_porous])
 
         #if number_of_unknown_faults > 0:
-        fault_fill_perms = self.generate_other_permutations(number_of_unknown_faults, fault_fillings)
+        fault_fill_perms = self.generate_other_permutations(number_of_unknown_faults, fault_sealingCapacities)
 
         #if number_of_unknown_sandstones > 0:
         env_perms = self.generate_environment_permutations(number_of_unknown_sandstones)
@@ -145,7 +145,7 @@ class Expander():
         submarinefan = r"[^>]*?SubmarineFan: "
         permeability = r"[^>]*?Permeability: "
         porosity = r"[^>]*?Porosity: "
-        fault_filling = r"(<[^>]*?Fault[^>]*?Filling: )"
+        fault_sealingCapacity = r"(<[^>]*?Fault[^>]*?SealingCapacity: )"
         sandstone = r"<[^>]*?Type: sandstone"
         shale = r"<[^>]*?Type: shale"
 
@@ -157,7 +157,7 @@ class Expander():
         shale_permeability = r"(" + shale + permeability + r")"
         shale_porosity = r"(" + shale + porosity + r")"
 
-        fault_filling_pattern = re.compile(fault_filling + unknown + end, flags=re.DOTALL)
+        fault_sealingCapacity_pattern = re.compile(fault_sealingCapacity + unknown + end, flags=re.DOTALL)
 
         submarinefan_sandstone_pattern = re.compile(sandstone_submarinefan + unknown + end, flags=re.DOTALL)
 
@@ -188,7 +188,7 @@ class Expander():
             (shale_submarinefan_pattern, shale_sub_perms),
             (shale_permeability_pattern, shale_perm_perms),
             (shale_porosity_pattern, shale_porous_perms),
-            (fault_filling_pattern, fault_fill_perms),
+            (fault_sealingCapacity_pattern, fault_fill_perms),
         ]
         self.run_replacement(pattern_permutation_pairs)
 
@@ -325,7 +325,7 @@ class Expander():
 
 
     def find_faults(self, text):
-        regex = r'<[^>]*?Fault[^>]*Filling: unknown'
+        regex = r'<[^>]*?Fault[^>]*SealingCapacity: unknown'
         return self.find_pattern_in_text(text, regex)
 
     def find_sandstones(self, text):
