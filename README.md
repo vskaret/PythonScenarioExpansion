@@ -1,5 +1,5 @@
-# ScenarioExpansion
-Scripts/programs for expanding an initial Maude configuration (scenario) for the GeoAssistant
+# Underdetermined World Concretizer
+Python implementation of an Underdetermined World Concretizer using Maude configurations as inputs and outputs
 
 ## Running the Python script:
 $ python3 expansion_script.py path_to_init_config output_directory
